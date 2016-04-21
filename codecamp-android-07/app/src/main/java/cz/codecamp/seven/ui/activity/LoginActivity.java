@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import cz.codecamp.seven.BuildConfig;
 import cz.codecamp.seven.R;
 import cz.codecamp.seven.service.LoginService;
@@ -29,24 +31,30 @@ public class LoginActivity extends Activity {
     public static final String PASSWORD_KEY = "password";
     private BroadcastReceiver receiver;
 
+    @Bind(R.id.progress)
+    View progress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        Button btnLogin = (Button) findViewById(R.id.btn_login);
-        final EditText editName = (EditText) findViewById(R.id.edit_login);
-        final EditText editPassword = (EditText) findViewById(R.id.edit_password);
+        ButterKnife.bind(this);
+        Button btnLogin = ButterKnife.findById(this, R.id.btn_login);
+        final EditText editName = ButterKnife.findById(this, R.id.edit_login);
+        final EditText editPassword = ButterKnife.findById(this, R.id.edit_password);
         receiver = new ResultReceiver();
+        progress.setVisibility(View.VISIBLE);
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 startLogin(editName.getText().toString(), editPassword.getText().toString());
             }
         });
     }
 
     private void startLogin(String name, String password) {
-        Intent i = new Intent(this, NormalService.class);
+        Intent i = new Intent(this, LoginService.class);
         i.putExtra(NAME_KEY, name);
         i.putExtra(PASSWORD_KEY, password);
         startService(i);
@@ -67,6 +75,7 @@ public class LoginActivity extends Activity {
     class ResultReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            progress.setVisibility(View.GONE);
             boolean success = intent.getBooleanExtra(SUCCESS_KEY, false);
             Snackbar.make(findViewById(R.id.content), success ? "Login Successful" : "Login failed", Snackbar.LENGTH_SHORT).show();
         }
